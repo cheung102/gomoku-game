@@ -231,10 +231,10 @@ class GomokuGUI:
         self.screen = pygame.display.set_mode((WINDOW_SIZE, WINDOW_SIZE))
         pygame.display.set_caption("五子棋游戏")
         
-        # 字体（使用 pygame 默认字体避免 SysFont bug）
-        self.font = pygame.font.Font(None, 24)
-        self.large_font = pygame.font.Font(None, 36)
-        self.small_font = pygame.font.Font(None, 18)
+        # 字体（加载系统中文字体）
+        self.font = self._load_chinese_font(24)
+        self.large_font = self._load_chinese_font(36)
+        self.small_font = self._load_chinese_font(18)
         
         # 音效
         self.sounds = {}
@@ -267,6 +267,26 @@ class GomokuGUI:
     def play_sound(self, sound_name):
         if sound_name in self.sounds:
             self.sounds[sound_name].play()
+    
+    def _load_chinese_font(self, size):
+        """加载系统中文字体"""
+        # Windows 系统中文字体路径
+        font_paths = [
+            "C:/Windows/Fonts/simhei.ttf",    # 黑体
+            "C:/Windows/Fonts/simsun.ttc",    # 宋体
+            "C:/Windows/Fonts/msyh.ttc",      # 微软雅黑
+            "C:/Windows/Fonts/msyhbd.ttc",    # 微软雅黑粗体
+        ]
+        
+        for font_path in font_paths:
+            if os.path.exists(font_path):
+                try:
+                    return pygame.font.Font(font_path, size)
+                except:
+                    continue
+        
+        # 如果找不到中文字体，使用默认字体
+        return pygame.font.Font(None, size)
     
     def _create_menu_buttons(self):
         """创建菜单按钮"""
