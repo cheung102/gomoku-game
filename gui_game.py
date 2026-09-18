@@ -1,8 +1,10 @@
 import pygame
 import sys
+import os
 
 # 初始化pygame
 pygame.init()
+pygame.mixer.init()
 
 # 常量定义
 BOARD_SIZE = 15  # 15x15棋盘
@@ -16,6 +18,43 @@ BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 RED = (255, 0, 0)
 GRAY = (128, 128, 128)
+
+class PieceAnimation:
+    def __init__(self, row, col, player, start_time):
+        self.row = row
+        self.col = col
+        self.player = player
+        self.start_time = start_time
+        self.duration = 200  # 动画持续时间（毫秒）
+        self.scale = 0.0  # 初始缩放
+    
+    def update(self, current_time):
+        elapsed = current_time - self.start_time
+        if elapsed < self.duration:
+            # 缩放从0到1
+            self.scale = elapsed / self.duration
+            return True  # 动画仍在进行
+        else:
+            self.scale = 1.0
+            return False  # 动画结束
+    
+    def draw(self, surface, cell_size, margin):
+        if self.scale <= 0:
+            return
+        
+        center_x = margin + self.col * cell_size
+        center_y = margin + self.row * cell_size
+        radius = (cell_size // 2 - 2) * self.scale
+        
+        color = BLACK if self.player == 1 else WHITE
+        border_color = WHITE if self.player == 1 else BLACK
+        
+        # 绘制棋子
+        pygame.draw.circle(surface, color, (center_x, center_y), int(radius))
+        # 绘制边框
+        if radius > 2:
+            pygame.draw.circle(surface, border_color, (center_x, center_y), int(radius), 2)
+
 
 class Board:
     def __init__(self, size=BOARD_SIZE):
@@ -74,6 +113,34 @@ class GomokuGUI:
         # 字体
         self.font = pygame.font.SysFont('SimHei', 24)
         self.small_font = pygame.font.SysFont('SimHei', 18)
+        
+        # 音效
+        self.sounds = {}
+        self.load_sounds()
+        
+        # 动画
+        self.animations = []  # 存储动画对象
+    
+    def load_sounds(self):
+        # 加载音效文件（如果存在）
+        sound_files = {
+            'place': 'sounds/place.wav',
+            'win': 'sounds/win.wav',
+            'draw': 'sounds/draw.wav'
+        }
+        
+        for name, file_path in sound_files.items():
+            if os.path.exists(file_path):
+                try:
+                    self.sounds[name] = pygame.mixer.Sound(file_path)
+                except:
+                    print(f"警告：无法加载音效 {file_path}")
+            else:
+                print(f"提示：音效文件 {file_path} 不存在，将静音播放")
+    
+    def play_sound(self, sound_name):
+        if sound_name in self.sounds:
+            self.sounds[sound_name].play()
     
     def draw_board(self):
         # 填充背景色
@@ -100,9 +167,12 @@ class GomokuGUI:
             self.screen.blit(text, (5, MARGIN + i * CELL_SIZE - 8))
     
     def draw_pieces(self):
+        # 创建动画位置集合，用于跳过静态绘制
+        animating_positions = {(anim.row, anim.col) for anim in self.animations}
+        
         for row in range(BOARD_SIZE):
             for col in range(BOARD_SIZE):
-                if self.board.grid[row][col] != 0:
+                if self.board.grid[row][col] != 0 and (row, col) not in animating_positions:
                     color = BLACK if self.board.grid[row][col] == 1 else WHITE
                     center = (MARGIN + col * CELL_SIZE, MARGIN + row * CELL_SIZE)
                     radius = CELL_SIZE // 2 - 2
@@ -148,20 +218,47 @@ class GomokuGUI:
                     if pos:
                         row, col = pos
                         if self.board.make_move(row, col, self.current_player):
+                            # 播放落子音效
+                            self.play_sound('place')
+                            
+                            # 创建落子动画
+                            current_time = pygame.time.get_ticks()
+                            animation = PieceAnimation(row, col, self.current_player, current_time)
+                            self.animations.append(animation)
+                            
                             if self.board.check_win(self.current_player):
                                 self.game_over = True
                                 self.winner = self.current_player
+                                # 播放胜利音效
+                                self.play_sound('win')
                             elif self.board.is_full():
                                 self.game_over = True
+                                # 播放平局音效
+                                self.play_sound('draw')
                             else:
                                 self.current_player = 2 if self.current_player == 1 else 1
                 
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_r:  # 按R键重新开始
                         self.__init__()
+                        self.animations = []  # 清空动画
             
             self.draw_board()
             self.draw_pieces()
+            
+            # 更新和绘制动画
+            current_time = pygame.time.get_ticks()
+            completed_animations = []
+            for animation in self.animations:
+                if not animation.update(current_time):
+                    completed_animations.append(animation)
+                else:
+                    animation.draw(self.screen, CELL_SIZE, MARGIN)
+            
+            # 移除已完成的动画
+            for animation in completed_animations:
+                self.animations.remove(animation)
+            
             self.draw_status()
             
             pygame.display.flip()
