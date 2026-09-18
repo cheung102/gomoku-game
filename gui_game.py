@@ -9,8 +9,8 @@ pygame.mixer.init()
 # 常量定义
 BOARD_SIZE = 15  # 15x15棋盘
 WINDOW_SIZE = 600  # 窗口大小
-CELL_SIZE = WINDOW_SIZE // (BOARD_SIZE + 1)  # 格子大小，留边距
-MARGIN = CELL_SIZE  # 边距
+MARGIN = 30  # 边距
+CELL_SIZE = (WINDOW_SIZE - 2 * MARGIN) // (BOARD_SIZE - 1)  # 格子大小
 
 # 颜色定义
 BG_COLOR = (220, 179, 92)  # 棋盘背景色
@@ -393,8 +393,9 @@ class GomokuGUI:
     
     def get_grid_pos(self, mouse_pos):
         x, y = mouse_pos
-        row = (y - MARGIN) // CELL_SIZE
-        col = (x - MARGIN) // CELL_SIZE
+        # 四舍五入到最近的交叉点
+        col = round((x - MARGIN) / CELL_SIZE)
+        row = round((y - MARGIN) / CELL_SIZE)
         if 0 <= row < BOARD_SIZE and 0 <= col < BOARD_SIZE:
             return row, col
         return None
