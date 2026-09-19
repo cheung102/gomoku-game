@@ -47,76 +47,74 @@ def save_wav(filename, samples, sample_rate=44100):
         wav_file.writeframes(struct.pack(f'<{len(samples)}h', *samples))
 
 def generate_place_sound():
-    """生成落子音效 - 短促的点击声"""
+    """生成落子音效 - 轻柔的木头敲击声"""
     samples = []
-    
-    # 主音：短促的点击
-    click_samples = generate_square_wave(800, 0.05, amplitude=0.3)
+    # 柔和的低频点击
+    click_samples = generate_sine_wave(300, 0.04, amplitude=0.15)
     samples.extend(click_samples)
-    
-    # 添加一些噪声
-    noise_samples = generate_noise(0.02, amplitude=0.1)
-    samples.extend(noise_samples)
-    
-    # 添加衰减
-    decay_samples = generate_sine_wave(400, 0.03, amplitude=0.2)
+    # 轻微的高频泛音
+    over_samples = generate_sine_wave(600, 0.02, amplitude=0.05)
+    samples.extend(over_samples)
+    # 快速衰减
+    decay_samples = generate_sine_wave(200, 0.03, amplitude=0.1)
     samples.extend(decay_samples)
-    
     return samples
+
 
 def generate_win_sound():
-    """生成胜利音效 - 上升的音调"""
+    """生成胜利音效 - 柔和的上升旋律"""
     samples = []
-    
-    # 上升音调序列
-    frequencies = [523, 659, 784, 1047]  # C5, E5, G5, C6
+    # 柔和的音符序列 (C5 -> E5 -> G5)
+    frequencies = [523, 659, 784]
     for freq in frequencies:
-        note_samples = generate_sine_wave(freq, 0.15, amplitude=0.4)
+        note_samples = generate_sine_wave(freq, 0.12, amplitude=0.2)
         samples.extend(note_samples)
-        # 添加短暂间隔
-        silence = [0] * int(44100 * 0.05)
+        silence = [0] * int(44100 * 0.04)
         samples.extend(silence)
-    
+    # 柔和的结尾
+    end_samples = generate_sine_wave(523, 0.2, amplitude=0.15)
+    samples.extend(end_samples)
     return samples
 
+
 def generate_draw_sound():
-    """生成平局音效 - 平淡的音调"""
+    """生成平局音效 - 平缓的音调"""
     samples = []
-    note_samples = generate_sine_wave(440, 0.2, amplitude=0.3)
+    note_samples = generate_sine_wave(350, 0.15, amplitude=0.15)
     samples.extend(note_samples)
-    silence = [0] * int(44100 * 0.1)
+    silence = [0] * int(44100 * 0.08)
     samples.extend(silence)
-    note_samples = generate_sine_wave(440, 0.2, amplitude=0.3)
+    note_samples = generate_sine_wave(330, 0.2, amplitude=0.12)
     samples.extend(note_samples)
     return samples
 
 
 def generate_undo_sound():
-    """生成悔棋音效 - 下降音调"""
+    """生成悔棋音效 - 柔和的下降音调"""
     samples = []
-    frequencies = [784, 659, 523]  # G5, E5, C5
+    frequencies = [523, 440, 350]  # C5 -> A4 -> F4
     for freq in frequencies:
-        note_samples = generate_sine_wave(freq, 0.1, amplitude=0.3)
+        note_samples = generate_sine_wave(freq, 0.08, amplitude=0.15)
         samples.extend(note_samples)
-        silence = [0] * int(44100 * 0.03)
+        silence = [0] * int(44100 * 0.02)
         samples.extend(silence)
     return samples
 
 
 def generate_hint_sound():
-    """生成提示音效 - 清脆的叮声"""
+    """生成提示音效 - 柔和的叮声"""
     samples = []
-    samples.extend(generate_sine_wave(1047, 0.1, amplitude=0.4))
-    silence = [0] * int(44100 * 0.05)
+    samples.extend(generate_sine_wave(784, 0.08, amplitude=0.2))
+    silence = [0] * int(44100 * 0.03)
     samples.extend(silence)
-    samples.extend(generate_sine_wave(1319, 0.15, amplitude=0.3))
+    samples.extend(generate_sine_wave(1047, 0.1, amplitude=0.15))
     return samples
 
 
 def generate_click_sound():
-    """生成按钮点击音效"""
+    """生成按钮点击音效 - 轻柔的点击"""
     samples = []
-    samples.extend(generate_square_wave(600, 0.03, amplitude=0.2))
+    samples.extend(generate_sine_wave(400, 0.02, amplitude=0.12))
     return samples
 
 
