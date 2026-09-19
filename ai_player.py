@@ -14,7 +14,7 @@ class GomokuAI:
         self.player = player
         self.opponent = 1 if player == 2 else 2
         self.difficulty = difficulty
-        self.search_depth = {'easy': 1, 'medium': 2, 'hard': 4}.get(difficulty, 2)
+        self.search_depth = {'easy': 1, 'medium': 2, 'hard': 3}.get(difficulty, 2)
         self.node_count = 0
 
     def get_move(self, board):
@@ -102,8 +102,8 @@ class GomokuAI:
         if depth == 0 or board.is_full():
             return self._evaluate_board(board)
         candidate_moves = self._get_candidate_moves(board)
-        if len(candidate_moves) > 15:
-            candidate_moves = self._pre_sort_moves(board, candidate_moves)[:15]
+        if len(candidate_moves) > 10:
+            candidate_moves = self._pre_sort_moves(board, candidate_moves)[:10]
         if is_maximizing:
             max_eval = -float('inf')
             for row, col in candidate_moves:
