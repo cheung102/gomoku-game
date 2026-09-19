@@ -348,6 +348,8 @@ class GomokuGUI:
             btn.enabled = not self.game_over and self.move_count > 0
             if btn.text.startswith("提示"):
                 btn.enabled = not self.game_over and self.ai is not None
+            if btn.text.startswith("重玩") or btn.text.startswith("菜单"):
+                btn.enabled = True
             btn.draw(self.screen)
 
         if self.game_over:
