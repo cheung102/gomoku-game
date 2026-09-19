@@ -47,6 +47,15 @@ python gui_game.py
 | 中等 | 评分系统选择最佳位置 |
 | 困难 | Minimax + Alpha-Beta 剪枝算法 |
 
+## 打包为可执行文件
+
+```bash
+pip install pyinstaller
+pyinstaller --onefile --windowed --name "五子棋" --add-data "sounds;sounds" --hidden-import=pygame gui_game.py
+```
+
+生成的 EXE 文件位于 `dist/五子棋.exe`（约14MB）。
+
 ## 游戏规则
 
 1. 黑棋先手
