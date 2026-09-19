@@ -90,5 +90,52 @@ class TestBoard(unittest.TestCase):
         self.board.make_move(7, 7, 1)
         self.assertFalse(self.board.is_full())
 
+    def test_undo_move(self):
+        """测试悔棋"""
+        self.board.make_move(7, 7, 1)
+        self.board.make_move(7, 8, 2)
+        result = self.board.undo_move()
+        self.assertEqual(result, (7, 8, 2))
+        self.assertEqual(self.board.grid[7][8], 0)
+        self.assertEqual(len(self.board.move_history), 1)
+
+    def test_undo_move_empty_history(self):
+        """测试空历史悔棋"""
+        result = self.board.undo_move()
+        self.assertIsNone(result)
+
+    def test_get_winning_line_horizontal(self):
+        """测试获取水平获胜线"""
+        for i in range(5):
+            self.board.make_move(7, 7 + i, 1)
+        line = self.board.get_winning_line(1)
+        self.assertIsNotNone(line)
+        self.assertEqual(len(line), 5)
+        self.assertEqual(line[0], (7, 7))
+        self.assertEqual(line[-1], (7, 11))
+
+    def test_get_winning_line_vertical(self):
+        """测试获取垂直获胜线"""
+        for i in range(5):
+            self.board.make_move(7 + i, 7, 1)
+        line = self.board.get_winning_line(1)
+        self.assertIsNotNone(line)
+        self.assertEqual(len(line), 5)
+
+    def test_get_winning_line_none(self):
+        """测试无获胜线"""
+        self.board.make_move(7, 7, 1)
+        line = self.board.get_winning_line(1)
+        self.assertIsNone(line)
+
+    def test_move_history(self):
+        """测试落子历史记录"""
+        self.board.make_move(7, 7, 1)
+        self.board.make_move(7, 8, 2)
+        self.assertEqual(len(self.board.move_history), 2)
+        self.assertEqual(self.board.move_history[0], (7, 7, 1))
+        self.assertEqual(self.board.move_history[1], (7, 8, 2))
+
+
 if __name__ == '__main__':
     unittest.main()

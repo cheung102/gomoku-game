@@ -2,39 +2,49 @@ class Board:
     def __init__(self, size=15):
         self.size = size
         self.grid = [[0 for _ in range(size)] for _ in range(size)]
-    
+        self.move_history = []
+
     def is_valid_move(self, row, col):
-        return (0 <= row < self.size and 
-                0 <= col < self.size and 
+        return (0 <= row < self.size and
+                0 <= col < self.size and
                 self.grid[row][col] == 0)
-    
+
     def make_move(self, row, col, player):
         if self.is_valid_move(row, col):
             self.grid[row][col] = player
+            self.move_history.append((row, col, player))
             return True
         return False
-    
-    def check_win(self, player):
-        # 检查所有方向
+
+    def undo_move(self):
+        if self.move_history:
+            row, col, player = self.move_history.pop()
+            self.grid[row][col] = 0
+            return (row, col, player)
+        return None
+
+    def get_winning_line(self, player):
         directions = [(0, 1), (1, 0), (1, 1), (1, -1)]
-        
         for row in range(self.size):
             for col in range(self.size):
                 if self.grid[row][col] == player:
                     for dr, dc in directions:
-                        count = 1
+                        line = [(row, col)]
                         for i in range(1, 5):
                             r, c = row + dr * i, col + dc * i
-                            if (0 <= r < self.size and 
-                                0 <= c < self.size and 
+                            if (0 <= r < self.size and
+                                0 <= c < self.size and
                                 self.grid[r][c] == player):
-                                count += 1
+                                line.append((r, c))
                             else:
                                 break
-                        if count >= 5:
-                            return True
-        return False
-    
+                        if len(line) >= 5:
+                            return line[:5]
+        return None
+
+    def check_win(self, player):
+        return self.get_winning_line(player) is not None
+
     def is_full(self):
         for row in range(self.size):
             for col in range(self.size):

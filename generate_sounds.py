@@ -82,44 +82,63 @@ def generate_win_sound():
 def generate_draw_sound():
     """生成平局音效 - 平淡的音调"""
     samples = []
-    
-    # 两个相同音调
     note_samples = generate_sine_wave(440, 0.2, amplitude=0.3)
     samples.extend(note_samples)
-    
-    # 短暂间隔
     silence = [0] * int(44100 * 0.1)
     samples.extend(silence)
-    
-    # 相同音调
     note_samples = generate_sine_wave(440, 0.2, amplitude=0.3)
     samples.extend(note_samples)
-    
     return samples
 
+
+def generate_undo_sound():
+    """生成悔棋音效 - 下降音调"""
+    samples = []
+    frequencies = [784, 659, 523]  # G5, E5, C5
+    for freq in frequencies:
+        note_samples = generate_sine_wave(freq, 0.1, amplitude=0.3)
+        samples.extend(note_samples)
+        silence = [0] * int(44100 * 0.03)
+        samples.extend(silence)
+    return samples
+
+
+def generate_hint_sound():
+    """生成提示音效 - 清脆的叮声"""
+    samples = []
+    samples.extend(generate_sine_wave(1047, 0.1, amplitude=0.4))
+    silence = [0] * int(44100 * 0.05)
+    samples.extend(silence)
+    samples.extend(generate_sine_wave(1319, 0.15, amplitude=0.3))
+    return samples
+
+
+def generate_click_sound():
+    """生成按钮点击音效"""
+    samples = []
+    samples.extend(generate_square_wave(600, 0.03, amplitude=0.2))
+    return samples
+
+
 def main():
-    # 创建sounds目录
     if not os.path.exists('sounds'):
         os.makedirs('sounds')
-    
-    # 生成音效文件
-    print("生成落子音效...")
-    place_samples = generate_place_sound()
-    save_wav('sounds/place.wav', place_samples)
-    
-    print("生成胜利音效...")
-    win_samples = generate_win_sound()
-    save_wav('sounds/win.wav', win_samples)
-    
-    print("生成平局音效...")
-    draw_samples = generate_draw_sound()
-    save_wav('sounds/draw.wav', draw_samples)
-    
+
+    sounds = [
+        ("sounds/place.wav", generate_place_sound, "落子音效"),
+        ("sounds/win.wav", generate_win_sound, "胜利音效"),
+        ("sounds/draw.wav", generate_draw_sound, "平局音效"),
+        ("sounds/undo.wav", generate_undo_sound, "悔棋音效"),
+        ("sounds/hint.wav", generate_hint_sound, "提示音效"),
+        ("sounds/click.wav", generate_click_sound, "点击音效"),
+    ]
+
+    for file_path, generator, name in sounds:
+        print(f"生成{name}...")
+        samples = generator()
+        save_wav(file_path, samples)
+
     print("音效文件生成完成！")
-    print("文件位置：")
-    print("  sounds/place.wav - 落子音效")
-    print("  sounds/win.wav   - 胜利音效")
-    print("  sounds/draw.wav  - 平局音效")
 
 if __name__ == "__main__":
     main()
